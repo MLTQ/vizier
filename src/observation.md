@@ -19,7 +19,7 @@ Defines all serialized JSON contracts for `WakeObservation` and live `Observatio
 - **Interacts with**: CLI serialization in `main.rs` and tests.
 
 ### `WakeObservation::compact`
-- **Does**: Prunes noisy wake data (groups, home tree children, cache-like recent files, ports, shell wrappers, local sessions) while preserving schema shape.
+- **Does**: Prunes wake payload volume (groups, home tree section omission, port list size, shell wrappers, local sessions) while preserving schema shape. Recent files are retained as an objective top-5 by mtime.
 - **Interacts with**: Applied by default in `main.rs`; bypassed by `--verbose`.
 
 ## Contracts

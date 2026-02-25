@@ -26,4 +26,4 @@ Provides baseline cross-platform collectors used as initial implementation and f
 | Future OS collectors | Baseline semantics remain a fallback path | Removing fallback without replacement |
 
 ## Notes
-Many fields are intentionally conservative placeholders in v0 baseline (for example deeper per-window semantics), to be incrementally replaced by native collectors. Public-IP lookup is best-effort with short timeouts to avoid blocking CLI responsiveness. Recent-file scanning is traversal-capped to keep wake latency bounded. Uptime uses boot-time derived logic with sanity caps to avoid host-specific `sysinfo` anomalies.
+Many fields are intentionally conservative placeholders in v0 baseline (for example deeper per-window semantics), to be incrementally replaced by native collectors. Public-IP lookup is best-effort with short timeouts to avoid blocking CLI responsiveness. Recent files are chosen objectively as the five most recently modified files within the scanned home-tree depth. Uptime uses boot-time derived logic with sanity caps to avoid host-specific `sysinfo` anomalies.

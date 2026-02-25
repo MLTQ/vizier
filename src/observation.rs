@@ -51,6 +51,7 @@ pub struct DateTimeInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FilesystemInfo {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub home_tree: Vec<HomeTreeEntry>,
     pub recent_files: Vec<RecentFileInfo>,
     pub mounts: Vec<MountInfo>,
@@ -226,8 +227,7 @@ pub struct Bounds {
 impl WakeObservation {
     pub fn compact(mut self) -> Self {
         self.user.groups = compact_groups(std::mem::take(&mut self.user.groups));
-        self.filesystem.home_tree =
-            compact_home_tree(std::mem::take(&mut self.filesystem.home_tree));
+        self.filesystem.home_tree.clear();
         self.filesystem.recent_files =
             compact_recent_files(std::mem::take(&mut self.filesystem.recent_files));
         self.filesystem.mounts = compact_mounts(std::mem::take(&mut self.filesystem.mounts));
@@ -270,34 +270,8 @@ fn compact_groups(groups: Vec<String>) -> Vec<String> {
     filtered
 }
 
-fn compact_home_tree(entries: Vec<HomeTreeEntry>) -> Vec<HomeTreeEntry> {
-    let mut compacted: Vec<HomeTreeEntry> = entries
-        .into_iter()
-        .filter(|entry| !entry.path.starts_with("~/."))
-        .map(|mut entry| {
-            if entry.entry_count.is_none() {
-                entry.entry_count = entry.children.as_ref().map(|children| children.len());
-            }
-            entry.children = None;
-            entry
-        })
-        .collect();
-
-    compacted.sort_by_key(|entry| home_tree_priority(&entry.path));
-    compacted.truncate(6);
-    compacted
-}
-
 fn compact_recent_files(files: Vec<RecentFileInfo>) -> Vec<RecentFileInfo> {
-    let original = files.clone();
-    let mut compacted: Vec<RecentFileInfo> = files
-        .into_iter()
-        .filter(|file| !is_noise_path(&file.path))
-        .collect();
-
-    if compacted.is_empty() {
-        compacted = original;
-    }
+    let mut compacted: Vec<RecentFileInfo> = files;
 
     compacted.truncate(5);
     compacted
@@ -354,29 +328,6 @@ fn compact_shell_history(history: Vec<String>) -> Vec<String> {
     let start = filtered.len().saturating_sub(5);
     filtered.drain(0..start);
     filtered
-}
-
-fn is_noise_path(path: &str) -> bool {
-    let noise_fragments = [
-        "/.cursor/",
-        "/.yarn/",
-        "/.docker/",
-        "/Music Library.musiclibrary/",
-        "/.cache/",
-        "/.config/",
-    ];
-
-    noise_fragments
-        .iter()
-        .any(|fragment| path.contains(fragment))
-}
-
-fn home_tree_priority(path: &str) -> u8 {
-    match path {
-        "~/Code" | "~/code" | "~/Projects" | "~/projects" | "~/Work" | "~/work" => 0,
-        "~/Desktop" | "~/Downloads" | "~/Documents" => 1,
-        _ => 2,
-    }
 }
 
 fn normalize_shell_history_line(line: &str) -> Option<String> {

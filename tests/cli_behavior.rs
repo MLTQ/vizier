@@ -76,6 +76,21 @@ fn wake_defaults_to_compact_profile() {
         .map(|value| value.len())
         .unwrap_or(0);
     assert!(history_len <= 5);
+
+    let home_tree_is_omitted = value
+        .get("filesystem")
+        .and_then(|value| value.as_object())
+        .map(|filesystem| !filesystem.contains_key("home_tree"))
+        .unwrap_or(false);
+    assert!(home_tree_is_omitted);
+
+    let recent_files_len = value
+        .get("filesystem")
+        .and_then(|value| value.get("recent_files"))
+        .and_then(|value| value.as_array())
+        .map(|value| value.len())
+        .unwrap_or(0);
+    assert!(recent_files_len <= 5);
 }
 
 #[test]

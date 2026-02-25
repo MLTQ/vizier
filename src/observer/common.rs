@@ -358,7 +358,6 @@ fn recent_files(home: &Path) -> Vec<RecentFileInfo> {
     for entry in WalkDir::new(home)
         .max_depth(5)
         .into_iter()
-        .take(5000)
         .filter_map(|x| x.ok())
         .filter(|x| x.file_type().is_file())
     {
@@ -386,7 +385,7 @@ fn recent_files(home: &Path) -> Vec<RecentFileInfo> {
 
     files
         .into_iter()
-        .take(10)
+        .take(5)
         .map(|(_, path, modified_ago_s)| RecentFileInfo {
             path,
             modified_ago_s,

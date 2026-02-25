@@ -14,7 +14,7 @@ Integration tests for CLI contract behavior and flag semantics. These tests guar
 - **Interacts with**: Wake config handling in `main.rs` and observer backends.
 
 ### `wake_defaults_to_compact_profile`
-- **Does**: Verifies default wake output uses compacted content (bounded groups and shell history).
+- **Does**: Verifies default wake output uses compacted content (bounded groups/history and omitted `filesystem.home_tree`).
 - **Interacts with**: `WakeObservation::compact` in `observation.rs`.
 
 ### `wake_verbose_returns_larger_payload`
