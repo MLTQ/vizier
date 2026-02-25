@@ -51,6 +51,51 @@ fn wake_no_public_ip_omits_public_ip_field() {
 }
 
 #[test]
+fn wake_defaults_to_compact_profile() {
+    let output = Command::new(bin())
+        .args(["--no-public-ip", "wake"])
+        .output()
+        .expect("wake invocation should succeed");
+
+    assert!(output.status.success());
+
+    let value: Value = serde_json::from_slice(&output.stdout).expect("wake should emit valid json");
+
+    let groups_len = value
+        .get("user")
+        .and_then(|value| value.get("groups"))
+        .and_then(|value| value.as_array())
+        .map(|value| value.len())
+        .unwrap_or(0);
+    assert!(groups_len <= 2);
+
+    let history_len = value
+        .get("recent_activity")
+        .and_then(|value| value.get("shell_history"))
+        .and_then(|value| value.as_array())
+        .map(|value| value.len())
+        .unwrap_or(0);
+    assert!(history_len <= 5);
+}
+
+#[test]
+fn wake_verbose_returns_larger_payload() {
+    let compact = Command::new(bin())
+        .args(["--no-public-ip", "wake"])
+        .output()
+        .expect("compact wake invocation should succeed");
+    assert!(compact.status.success());
+
+    let verbose = Command::new(bin())
+        .args(["--no-public-ip", "--verbose", "wake"])
+        .output()
+        .expect("verbose wake invocation should succeed");
+    assert!(verbose.status.success());
+
+    assert!(verbose.stdout.len() > compact.stdout.len());
+}
+
+#[test]
 fn snapshot_all_connections_is_superset() {
     let default_output = Command::new(bin())
         .arg("snapshot")

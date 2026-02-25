@@ -13,6 +13,14 @@ Integration tests for CLI contract behavior and flag semantics. These tests guar
 - **Does**: Verifies wake output omits `network_identity.public_ip` when `--no-public-ip` is set.
 - **Interacts with**: Wake config handling in `main.rs` and observer backends.
 
+### `wake_defaults_to_compact_profile`
+- **Does**: Verifies default wake output uses compacted content (bounded groups and shell history).
+- **Interacts with**: `WakeObservation::compact` in `observation.rs`.
+
+### `wake_verbose_returns_larger_payload`
+- **Does**: Verifies `--verbose` bypasses compacting and returns a larger wake payload.
+- **Interacts with**: `--verbose` flag handling in `main.rs`.
+
 ### `snapshot_all_connections_is_superset`
 - **Does**: Verifies `--all-connections` does not reduce observed network connection rows.
 - **Interacts with**: Active connection collector in `util/net.rs`.

@@ -222,3 +222,180 @@ pub struct Bounds {
     pub w: i32,
     pub h: i32,
 }
+
+impl WakeObservation {
+    pub fn compact(mut self) -> Self {
+        self.user.groups = compact_groups(std::mem::take(&mut self.user.groups));
+        self.filesystem.home_tree =
+            compact_home_tree(std::mem::take(&mut self.filesystem.home_tree));
+        self.filesystem.recent_files =
+            compact_recent_files(std::mem::take(&mut self.filesystem.recent_files));
+        self.filesystem.mounts = compact_mounts(std::mem::take(&mut self.filesystem.mounts));
+        self.network_identity.local_ips =
+            compact_local_ips(std::mem::take(&mut self.network_identity.local_ips));
+        self.listening_ports = compact_listening_ports(std::mem::take(&mut self.listening_ports));
+        self.recent_activity.shell_history =
+            compact_shell_history(std::mem::take(&mut self.recent_activity.shell_history));
+        self.recent_activity.running_since_boot.clear();
+        self.other_sessions.retain(|session| {
+            let from = session.from.trim().to_ascii_lowercase();
+            !(from.is_empty() || from == "local" || from == "-")
+        });
+        self.other_sessions.truncate(3);
+        self
+    }
+}
+
+fn compact_groups(groups: Vec<String>) -> Vec<String> {
+    let mut filtered: Vec<String> = groups
+        .into_iter()
+        .filter(|group| {
+            !group.starts_with('_')
+                && !group.starts_with("com.apple.")
+                && !matches!(
+                    group.as_str(),
+                    "everyone" | "localaccounts" | "_appserverusr" | "_appserveradm"
+                )
+        })
+        .collect();
+
+    filtered.sort();
+    filtered.dedup();
+
+    if filtered.iter().any(|group| group == "admin") {
+        return vec!["admin".to_string()];
+    }
+
+    filtered.truncate(2);
+    filtered
+}
+
+fn compact_home_tree(entries: Vec<HomeTreeEntry>) -> Vec<HomeTreeEntry> {
+    let mut compacted: Vec<HomeTreeEntry> = entries
+        .into_iter()
+        .filter(|entry| !entry.path.starts_with("~/."))
+        .map(|mut entry| {
+            if entry.entry_count.is_none() {
+                entry.entry_count = entry.children.as_ref().map(|children| children.len());
+            }
+            entry.children = None;
+            entry
+        })
+        .collect();
+
+    compacted.sort_by_key(|entry| home_tree_priority(&entry.path));
+    compacted.truncate(6);
+    compacted
+}
+
+fn compact_recent_files(files: Vec<RecentFileInfo>) -> Vec<RecentFileInfo> {
+    let original = files.clone();
+    let mut compacted: Vec<RecentFileInfo> = files
+        .into_iter()
+        .filter(|file| !is_noise_path(&file.path))
+        .collect();
+
+    if compacted.is_empty() {
+        compacted = original;
+    }
+
+    compacted.truncate(5);
+    compacted
+}
+
+fn compact_mounts(mounts: Vec<MountInfo>) -> Vec<MountInfo> {
+    let mut compacted: Vec<MountInfo> = mounts
+        .into_iter()
+        .filter(|mount| {
+            mount.path == "/" || mount.path == "/home" || mount.path.starts_with("/Volumes/")
+        })
+        .collect();
+
+    compacted.sort_by(|left, right| left.path.cmp(&right.path));
+    compacted.dedup_by(|left, right| left.path == right.path);
+    compacted.truncate(3);
+    compacted
+}
+
+fn compact_local_ips(ips: Vec<String>) -> Vec<String> {
+    let mut filtered: Vec<String> = ips.into_iter().filter(|ip| ip.contains('.')).collect();
+    filtered.sort();
+    filtered.dedup();
+    filtered.truncate(2);
+    filtered
+}
+
+fn compact_listening_ports(ports: Vec<ListeningPort>) -> Vec<ListeningPort> {
+    let keep_ports = [11434_u16, 8080, 6379, 5432, 5173, 3030, 3000, 5000];
+    let noise_apps = ["controlce", "rapportd", "ardagent", "identitys"];
+
+    let mut filtered: Vec<ListeningPort> = ports
+        .into_iter()
+        .filter(|port| {
+            let app = port.app.to_ascii_lowercase();
+            !noise_apps.iter().any(|noise| app.starts_with(noise))
+                && (keep_ports.contains(&port.port) || port.port <= 32768)
+        })
+        .collect();
+
+    filtered.sort_by(|left, right| left.port.cmp(&right.port).then(left.app.cmp(&right.app)));
+    filtered.dedup_by(|left, right| left.port == right.port && left.app == right.app);
+    filtered.truncate(12);
+    filtered
+}
+
+fn compact_shell_history(history: Vec<String>) -> Vec<String> {
+    let mut filtered: Vec<String> = history
+        .into_iter()
+        .filter_map(|line| normalize_shell_history_line(&line))
+        .collect();
+
+    filtered.dedup();
+    let start = filtered.len().saturating_sub(5);
+    filtered.drain(0..start);
+    filtered
+}
+
+fn is_noise_path(path: &str) -> bool {
+    let noise_fragments = [
+        "/.cursor/",
+        "/.yarn/",
+        "/.docker/",
+        "/Music Library.musiclibrary/",
+        "/.cache/",
+        "/.config/",
+    ];
+
+    noise_fragments
+        .iter()
+        .any(|fragment| path.contains(fragment))
+}
+
+fn home_tree_priority(path: &str) -> u8 {
+    match path {
+        "~/Code" | "~/code" | "~/Projects" | "~/projects" | "~/Work" | "~/work" => 0,
+        "~/Desktop" | "~/Downloads" | "~/Documents" => 1,
+        _ => 2,
+    }
+}
+
+fn normalize_shell_history_line(line: &str) -> Option<String> {
+    let mut value = line.trim().to_string();
+    if value.is_empty() {
+        return None;
+    }
+
+    if let Some((prefix, _)) = value.split_once(";                 EC=") {
+        value = prefix.trim().to_string();
+    }
+
+    if value.starts_with("PS1=") || value.starts_with("PS2=") {
+        return None;
+    }
+
+    if value.contains("___BEGIN___COMMAND_DONE_MARKER___") {
+        return None;
+    }
+
+    if value.is_empty() { None } else { Some(value) }
+}

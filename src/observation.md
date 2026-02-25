@@ -8,6 +8,7 @@ Defines all serialized JSON contracts for `WakeObservation` and live `Observatio
 ### `WakeObservation`
 - **Does**: Represents cold-start orientation data.
 - **Interacts with**: Populated by `BaselineWaker` in `observer/common.rs`.
+- **Rationale**: Supports compacting via `WakeObservation::compact` for low-token default wake output.
 
 ### `Observation`
 - **Does**: Represents live-state snapshots collected repeatedly.
@@ -16,6 +17,10 @@ Defines all serialized JSON contracts for `WakeObservation` and live `Observatio
 ### Nested DTO structs
 - **Does**: Model strongly typed payload sections (machine, windows, network, filesystem, etc.).
 - **Interacts with**: CLI serialization in `main.rs` and tests.
+
+### `WakeObservation::compact`
+- **Does**: Prunes noisy wake data (groups, home tree children, cache-like recent files, ports, shell wrappers, local sessions) while preserving schema shape.
+- **Interacts with**: Applied by default in `main.rs`; bypassed by `--verbose`.
 
 ## Contracts
 
@@ -26,4 +31,4 @@ Defines all serialized JSON contracts for `WakeObservation` and live `Observatio
 | External consumers | JSON shape is versioned with `schema_version` | Structural schema changes without bump |
 
 ## Notes
-The schema is intentionally expansive; collectors may initially return empty vectors or null-able fields and gain fidelity over time.
+The schema is intentionally expansive; collectors may initially return empty vectors or null-able fields and gain fidelity over time. Compact wake mode reduces token cost by shrinking arrays and filtering noisy values without breaking field compatibility.

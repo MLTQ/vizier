@@ -21,6 +21,9 @@ struct Cli {
     pretty: bool,
 
     #[arg(long, global = true)]
+    verbose: bool,
+
+    #[arg(long, global = true)]
     all_connections: bool,
 
     #[arg(long, global = true)]
@@ -62,6 +65,7 @@ fn run() -> Result<()> {
                 no_public_ip: cli.no_public_ip,
             });
             let wake = waker.wake()?;
+            let wake = if cli.verbose { wake } else { wake.compact() };
             print_json(&wake, cli.pretty)?;
         }
         Command::Snapshot => {

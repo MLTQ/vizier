@@ -8,6 +8,7 @@ CLI entry point for `vz`. Parses arguments, dispatches commands, and serializes 
 ### `Cli`
 - **Does**: Defines global flags and subcommands exposed by the binary.
 - **Interacts with**: `create_observer` and `create_waker` in `observer/mod.rs`.
+- **Rationale**: `wake` defaults to compact output to reduce token footprint; `--verbose` emits full wake payload.
 
 ### `run`
 - **Does**: Executes one-shot (`wake`, `snapshot`) and streaming (`watch`) flows.

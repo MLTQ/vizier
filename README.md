@@ -10,6 +10,7 @@ It emits JSON for two modes:
 
 Current implementation includes:
 - Full CLI surface from the spec (`wake`, `snapshot`, `watch`, `--interval`, `--diff`, `--pretty`)
+- Default compact wake output with `--verbose` full wake override
 - Versioned schema structs for `WakeObservation` and `Observation`
 - Diff streaming via RFC 6902 JSON Patch envelopes
 - Filesystem delta events via `notify`
@@ -27,6 +28,7 @@ vz watch --interval 250
 vz watch --diff
 vz --pretty snapshot
 vz --no-public-ip wake
+vz --verbose wake
 vz --all-connections snapshot
 vz --watch-path /tmp watch --diff
 ```
