@@ -33,7 +33,7 @@ struct Cli {
     watch_path: Option<PathBuf>,
 
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -58,8 +58,12 @@ fn main() {
 
 fn run() -> Result<()> {
     let cli = Cli::parse();
+    let command = cli.command.unwrap_or(Command::Watch {
+        interval: 1000,
+        diff: true,
+    });
 
-    match cli.command {
+    match command {
         Command::Wake => {
             let waker = create_waker(WakeConfig {
                 no_public_ip: cli.no_public_ip,

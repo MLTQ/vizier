@@ -6,7 +6,7 @@ Integration tests for CLI contract behavior and flag semantics. These tests guar
 ## Components
 
 ### `help_uses_vz_command_name`
-- **Does**: Verifies help text exposes the intended `vz` command name.
+- **Does**: Verifies help text exposes the intended `vz` command name and optional command position.
 - **Interacts with**: Clap parser wiring in `main.rs`.
 
 ### `wake_no_public_ip_omits_public_ip_field`
@@ -20,6 +20,10 @@ Integration tests for CLI contract behavior and flag semantics. These tests guar
 ### `wake_verbose_returns_larger_payload`
 - **Does**: Verifies `--verbose` bypasses compacting and returns a larger wake payload.
 - **Interacts with**: `--verbose` flag handling in `main.rs`.
+
+### `no_subcommand_defaults_to_watch_diff_stream`
+- **Does**: Verifies bare `vz` emits an initial snapshot followed by JSON patch output, matching default delta mode.
+- **Interacts with**: Default command fallback and watch-diff loop in `main.rs`.
 
 ### `snapshot_all_connections_is_superset`
 - **Does**: Verifies `--all-connections` does not reduce observed network connection rows.

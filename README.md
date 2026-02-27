@@ -10,6 +10,7 @@ It emits JSON for two modes:
 
 Current implementation includes:
 - Full CLI surface from the spec (`wake`, `snapshot`, `watch`, `--interval`, `--diff`, `--pretty`)
+- Bare `vz` defaults to delta streaming (`watch --diff`)
 - Default compact wake output with `--verbose` full wake override
 - Versioned schema structs for `WakeObservation` and `Observation`
 - Diff streaming via RFC 6902 JSON Patch envelopes
@@ -21,6 +22,7 @@ Current implementation includes:
 ## Usage
 
 ```bash
+vz
 vz wake
 vz snapshot
 vz watch
@@ -32,6 +34,8 @@ vz --verbose wake
 vz --all-connections snapshot
 vz --watch-path /tmp watch --diff
 ```
+
+`vz` without a subcommand behaves like `vz watch --diff`.
 
 All JSON goes to stdout. Errors go to stderr.
 
@@ -46,6 +50,16 @@ Binary path:
 - debug: `target/debug/vizier`
 - release: `target/release/vizier`
 
+Run from anywhere as `vz`:
+
+```bash
+cargo build --release
+mkdir -p ~/.local/bin
+ln -sf "$PWD/target/release/vizier" ~/.local/bin/vz
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
 On this machine, release binary size is currently `3,927,584` bytes (`3.9 MB`), above the `<2 MB` long-term target in the spec.
 
 ## Tests
@@ -59,6 +73,7 @@ Current integration test coverage includes:
 - wake `--no-public-ip` behavior
 - snapshot `--all-connections` behavior
 - watch `--diff` stream contract
+- bare `vz` defaulting to delta stream
 - CLI help command surface (`Usage: vz ...`)
 
 ## Design Notes
