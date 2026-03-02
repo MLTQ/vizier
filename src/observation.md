@@ -17,9 +17,10 @@ Defines all serialized JSON contracts for `WakeObservation` and live `Observatio
 ### Nested DTO structs
 - **Does**: Model strongly typed payload sections (machine, windows, network, filesystem, etc.).
 - **Interacts with**: CLI serialization in `main.rs` and tests.
+- **Rationale**: `FileActivityInfo` captures best-effort created/accessed/modified ages so wake and fs deltas can describe recent file activity without platform-specific audit hooks.
 
 ### `WakeObservation::compact`
-- **Does**: Prunes wake payload volume (groups, home tree section omission, port list size, shell wrappers, local sessions) while preserving schema shape. Recent files are retained as an objective top-5 by mtime.
+- **Does**: Prunes wake payload volume (groups, home tree section omission, port list size, shell wrappers, local sessions) while preserving schema shape. Recent files are retained as an objective top-5 by freshest available file activity time.
 - **Interacts with**: Applied by default in `main.rs`; bypassed by `--verbose`.
 
 ## Contracts

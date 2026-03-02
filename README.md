@@ -12,6 +12,7 @@ Current implementation includes:
 - Full CLI surface from the spec (`wake`, `snapshot`, `watch`, `--interval`, `--diff`, `--pretty`)
 - Bare `vz` defaults to delta streaming (`watch --diff`)
 - Default compact wake output with `--verbose` full wake override
+- Wake recent files are ranked by freshest available file activity (create/access/modify)
 - Versioned schema structs for `WakeObservation` and `Observation`
 - Diff streaming via RFC 6902 JSON Patch envelopes
 - Filesystem delta events via `notify`
@@ -81,3 +82,4 @@ Current integration test coverage includes:
 - Collectors are best-effort and fail open to preserve command reliability.
 - Platform collectors layer on top of a shared baseline collector.
 - `watch --diff` emits one full snapshot first, then patch envelopes.
+- Live `fs_events` report create/modify/delete/rename and include best-effort file activity timestamps when the path still exists.

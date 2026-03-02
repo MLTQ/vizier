@@ -70,7 +70,20 @@ pub struct HomeTreeEntry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecentFileInfo {
     pub path: String,
-    pub modified_ago_s: u64,
+    #[serde(flatten)]
+    pub activity: FileActivityInfo,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileActivityInfo {
+    pub freshest_kind: String,
+    pub freshest_ago_s: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_ago_s: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub accessed_ago_s: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modified_ago_s: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -208,6 +221,8 @@ pub struct FSEvent {
     pub path: String,
     pub kind: String,
     pub ts: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file_activity: Option<FileActivityInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

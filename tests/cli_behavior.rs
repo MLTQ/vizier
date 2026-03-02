@@ -91,6 +91,16 @@ fn wake_defaults_to_compact_profile() {
         .map(|value| value.len())
         .unwrap_or(0);
     assert!(recent_files_len <= 5);
+
+    if let Some(first_recent_file) = value
+        .get("filesystem")
+        .and_then(|value| value.get("recent_files"))
+        .and_then(|value| value.as_array())
+        .and_then(|value| value.first())
+    {
+        assert!(first_recent_file.get("freshest_kind").is_some());
+        assert!(first_recent_file.get("freshest_ago_s").is_some());
+    }
 }
 
 #[test]

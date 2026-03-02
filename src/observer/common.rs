@@ -1,4 +1,3 @@
-use std::cmp::Reverse;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -14,10 +13,10 @@ use sysinfo::{Disks, System};
 use walkdir::WalkDir;
 
 use crate::observation::{
-    Bounds, DateTimeInfo, DisplayInfo, FSEvent, FilesystemInfo, GpuInfo, HomeTreeEntry,
-    InstalledApp, MachineInfo, MountInfo, NetworkIdentity, Observation, Point, RecentActivity,
-    RecentFileInfo, ResourceInfo, RunningProcessInfo, SessionInfo, TerminalCtx, UserInfo,
-    WakeObservation, WindowInfo,
+    Bounds, DateTimeInfo, DisplayInfo, FSEvent, FileActivityInfo, FilesystemInfo, GpuInfo,
+    HomeTreeEntry, InstalledApp, MachineInfo, MountInfo, NetworkIdentity, Observation, Point,
+    RecentActivity, RecentFileInfo, ResourceInfo, RunningProcessInfo, SessionInfo, TerminalCtx,
+    UserInfo, WakeObservation, WindowInfo,
 };
 use crate::observer::{Observer, ObserverConfig, WakeConfig, Waker};
 use crate::util::net::{collect_active_connections, collect_listening_ports};
@@ -280,6 +279,7 @@ fn map_notify_event(event: Event) -> Vec<FSEvent> {
     .to_string();
 
     let ts = current_ts();
+    let now = SystemTime::now();
 
     event
         .paths
@@ -288,6 +288,7 @@ fn map_notify_event(event: Event) -> Vec<FSEvent> {
             path: path.display().to_string(),
             kind: kind.clone(),
             ts,
+            file_activity: file_activity_for_path(&path, now),
         })
         .collect()
 }
@@ -366,31 +367,79 @@ fn recent_files(home: &Path) -> Vec<RecentFileInfo> {
             Err(_) => continue,
         };
 
-        let modified = match metadata.modified() {
-            Ok(modified) => modified,
-            Err(_) => continue,
+        let Some(activity) = file_activity_from_metadata(&metadata, now) else {
+            continue;
         };
 
         files.push((
-            Reverse(modified),
+            activity.freshest_ago_s,
             entry.path().display().to_string(),
-            now.duration_since(modified)
-                .ok()
-                .map(|d| d.as_secs())
-                .unwrap_or(0),
+            activity,
         ));
     }
 
-    files.sort_by_key(|(modified, _, _)| *modified);
+    files.sort_by(|left, right| left.0.cmp(&right.0).then(left.1.cmp(&right.1)));
 
     files
         .into_iter()
         .take(5)
-        .map(|(_, path, modified_ago_s)| RecentFileInfo {
-            path,
-            modified_ago_s,
-        })
+        .map(|(_, path, activity)| RecentFileInfo { path, activity })
         .collect()
+}
+
+fn file_activity_for_path(path: &Path, now: SystemTime) -> Option<FileActivityInfo> {
+    let metadata = fs::metadata(path).ok()?;
+    file_activity_from_metadata(&metadata, now)
+}
+
+fn file_activity_from_metadata(
+    metadata: &fs::Metadata,
+    now: SystemTime,
+) -> Option<FileActivityInfo> {
+    let created_ago_s = metadata
+        .created()
+        .ok()
+        .and_then(|ts| age_in_seconds(now, ts));
+    let accessed_ago_s = metadata
+        .accessed()
+        .ok()
+        .and_then(|ts| age_in_seconds(now, ts));
+    let modified_ago_s = metadata
+        .modified()
+        .ok()
+        .and_then(|ts| age_in_seconds(now, ts));
+
+    let mut freshest: Option<(&str, u64)> = None;
+
+    for (kind, age) in [
+        ("created", created_ago_s),
+        ("accessed", accessed_ago_s),
+        ("modified", modified_ago_s),
+    ] {
+        let Some(age) = age else {
+            continue;
+        };
+
+        if freshest.map(|(_, best_age)| age < best_age).unwrap_or(true) {
+            freshest = Some((kind, age));
+        }
+    }
+
+    let (freshest_kind, freshest_ago_s) = freshest?;
+
+    Some(FileActivityInfo {
+        freshest_kind: freshest_kind.to_string(),
+        freshest_ago_s,
+        created_ago_s,
+        accessed_ago_s,
+        modified_ago_s,
+    })
+}
+
+fn age_in_seconds(now: SystemTime, ts: SystemTime) -> Option<u64> {
+    now.duration_since(ts)
+        .ok()
+        .map(|duration| duration.as_secs())
 }
 
 fn mounts() -> Vec<MountInfo> {
