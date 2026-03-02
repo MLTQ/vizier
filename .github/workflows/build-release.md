@@ -6,7 +6,7 @@ Builds distributable `vz` binaries for supported macOS and Linux targets in GitH
 ## Components
 
 ### `build` job
-- **Does**: Compiles release binaries for Linux x86_64, macOS x86_64, and macOS arm64.
+- **Does**: Compiles release binaries for Linux x86_64 and macOS arm64.
 - **Interacts with**: Cargo, GitHub-hosted runners, and the repo's `Cargo.toml` binary target.
 
 ### Artifact packaging

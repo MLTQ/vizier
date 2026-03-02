@@ -67,8 +67,9 @@ curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/main/scripts/install.sh
 
 The release workflow publishes prebuilt archives for:
 - `x86_64-unknown-linux-gnu`
-- `x86_64-apple-darwin`
 - `aarch64-apple-darwin`
+
+macOS release builds are Apple Silicon only.
 
 If you built from source, install the compiled binary by copying it onto your `PATH`:
 

@@ -26,4 +26,4 @@ Installs a prebuilt `vz` binary from GitHub Releases into a user-local bin direc
 | CI release workflow | Release archives are named `vz-<target>.tar.gz` | Asset naming changes |
 
 ## Notes
-This script intentionally supports only the targets built by CI. Unsupported platforms fail fast with a clear message instead of guessing at incompatible binaries.
+This script intentionally supports only the targets built by CI. Unsupported platforms fail fast with a clear message instead of guessing at incompatible binaries. On macOS, that currently means Apple Silicon only.
