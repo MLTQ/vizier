@@ -5,7 +5,7 @@ use std::process::{Command, Stdio};
 use serde_json::Value;
 
 fn bin() -> PathBuf {
-    if let Some(path) = option_env!("CARGO_BIN_EXE_vizier") {
+    if let Some(path) = option_env!("CARGO_BIN_EXE_vz") {
         return PathBuf::from(path);
     }
 
@@ -14,7 +14,7 @@ fn bin() -> PathBuf {
     if path.ends_with("deps") {
         path.pop();
     }
-    path.push("vizier");
+    path.push("vz");
 
     path
 }

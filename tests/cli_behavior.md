@@ -37,5 +37,5 @@ Integration tests for CLI contract behavior and flag semantics. These tests guar
 
 | Dependent | Expects | Breaking changes |
 |-----------|---------|------------------|
-| CLI users | Stable behavior for documented flags and stream format | Flag semantic changes without test updates |
+| CLI users | Stable behavior for documented flags, stream format, and `vz` binary name | Flag semantic changes without test updates |
 | CI | Fast, deterministic CLI-level contract checks | Tests depending on non-deterministic timing or global machine state |

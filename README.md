@@ -40,7 +40,7 @@ vz --watch-path /tmp watch --diff
 
 All JSON goes to stdout. Errors go to stderr.
 
-## Build
+## Build From Source
 
 ```bash
 cargo build
@@ -48,18 +48,53 @@ cargo build --release
 ```
 
 Binary path:
-- debug: `target/debug/vizier`
-- release: `target/release/vizier`
+- debug: `target/debug/vz`
+- release: `target/release/vz`
 
-Run from anywhere as `vz`:
+## Install
+
+Preferred install path (no Rust required):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/main/scripts/install.sh | sh
+```
+
+Install a specific tagged release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/main/scripts/install.sh | VZ_VERSION=v0.1.0 sh
+```
+
+The release workflow publishes prebuilt archives for:
+- `x86_64-unknown-linux-gnu`
+- `x86_64-apple-darwin`
+- `aarch64-apple-darwin`
+
+If you built from source, install the compiled binary by copying it onto your `PATH`:
 
 ```bash
 cargo build --release
 mkdir -p ~/.local/bin
-ln -sf "$PWD/target/release/vizier" ~/.local/bin/vz
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+cp target/release/vz ~/.local/bin/vz
+chmod +x ~/.local/bin/vz
 ```
+
+If you already have a prebuilt `vz` binary, Cargo is not needed:
+
+```bash
+mkdir -p ~/.local/bin
+cp ./vz ~/.local/bin/vz
+chmod +x ~/.local/bin/vz
+```
+
+Make sure your shell can find it:
+
+```bash
+grep -q 'HOME/.local/bin' ~/.zshrc || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+exec zsh
+```
+
+GitHub Actions builds release artifacts for macOS and Linux and attaches them to version tags (`v*`) in GitHub Releases. Pull requests and branch pushes also produce downloadable CI artifacts.
 
 On this machine, release binary size is currently `3,927,584` bytes (`3.9 MB`), above the `<2 MB` long-term target in the spec.
 
