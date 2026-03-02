@@ -22,7 +22,7 @@ Installs a prebuilt `vz` binary from GitHub Releases into a user-local bin direc
 | Dependent | Expects | Breaking changes |
 |-----------|---------|------------------|
 | End users | `sh scripts/install.sh` installs `vz` to `~/.local/bin` by default | Changing defaults, removing supported targets |
-| README | Environment variables (`VZ_REPO`, `VZ_VERSION`, `INSTALL_DIR`) remain valid | Renaming env vars or behavior |
+| README | Environment variables (`VZ_REPO`, `VZ_VERSION`, `INSTALL_DIR`) remain valid, including `VZ_VERSION=rolling` | Renaming env vars or behavior |
 | CI release workflow | Release archives are named `vz-<target>.tar.gz` | Asset naming changes |
 
 ## Notes

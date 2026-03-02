@@ -65,6 +65,12 @@ Install a specific tagged release:
 curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/main/scripts/install.sh | VZ_VERSION=v0.1.0 sh
 ```
 
+Install the latest rolling branch build:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/main/scripts/install.sh | VZ_VERSION=rolling sh
+```
+
 The release workflow publishes prebuilt archives for:
 - `x86_64-unknown-linux-gnu`
 - `aarch64-apple-darwin`
@@ -95,7 +101,7 @@ grep -q 'HOME/.local/bin' ~/.zshrc || echo 'export PATH="$HOME/.local/bin:$PATH"
 exec zsh
 ```
 
-GitHub Actions builds release artifacts for macOS and Linux and attaches them to version tags (`v*`) in GitHub Releases. Pull requests and branch pushes also produce downloadable CI artifacts.
+GitHub Actions builds release artifacts for macOS and Linux on every run. Pushes to `main`/`master` refresh a rolling prerelease tagged `rolling`, and version tags (`v*`) publish versioned GitHub Releases. Pull requests also produce downloadable CI artifacts.
 
 On this machine, release binary size is currently `3,927,584` bytes (`3.9 MB`), above the `<2 MB` long-term target in the spec.
 

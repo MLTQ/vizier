@@ -1,7 +1,7 @@
 # build-release.yml
 
 ## Purpose
-Builds distributable `vz` binaries for supported macOS and Linux targets in GitHub Actions. It also publishes tagged builds as GitHub Release assets so end users can install without Rust tooling.
+Builds distributable `vz` binaries for supported macOS and Linux targets in GitHub Actions. It publishes both rolling and versioned GitHub Release assets so end users can install without Rust tooling.
 
 ## Components
 
@@ -13,9 +13,13 @@ Builds distributable `vz` binaries for supported macOS and Linux targets in GitH
 - **Does**: Produces `tar.gz` archives and SHA-256 checksum files for each target.
 - **Interacts with**: `tar`, `shasum`, `actions/upload-artifact`.
 
-### Release publishing
-- **Does**: Uploads packaged archives to GitHub Releases when the workflow runs on a `v*` tag.
-- **Interacts with**: `softprops/action-gh-release`.
+### `release-tag` job
+- **Does**: Creates or updates a versioned GitHub Release for `v*` tag pushes and attaches all packaged artifacts.
+- **Interacts with**: `actions/download-artifact`, `softprops/action-gh-release`.
+
+### `release-rolling` job
+- **Does**: Creates or updates a rolling prerelease tagged `rolling` on `main`/`master` pushes and attaches all packaged artifacts.
+- **Interacts with**: `actions/download-artifact`, `softprops/action-gh-release`.
 
 ## Contracts
 
@@ -26,4 +30,4 @@ Builds distributable `vz` binaries for supported macOS and Linux targets in GitH
 | Maintainers | Push/PR builds surface packaging failures before release | Removing build matrix coverage |
 
 ## Notes
-The workflow uploads CI artifacts on every push and pull request, but only publishes GitHub Release assets for version tags matching `v*`.
+The workflow uploads CI artifacts on every push and pull request. Pushes to `main`/`master` also refresh a rolling prerelease (`rolling`), while version tags matching `v*` publish a versioned GitHub Release.
