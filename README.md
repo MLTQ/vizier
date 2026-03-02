@@ -1,7 +1,7 @@
 # vizier (`vz`)
 
 `vizier` is a Rust CLI for structured desktop/system perception snapshots.
-
+It is part of the OrbWeaver and Ponderer ecosystem, designed to give agents a sense of orientation into the system in which they live.
 It emits JSON for two modes:
 - `wake`: cold-start machine/user/environment orientation (`WakeObservation`)
 - `snapshot` / `watch`: live state tracking (`Observation`)
