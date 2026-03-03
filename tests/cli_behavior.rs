@@ -121,44 +121,19 @@ fn wake_verbose_returns_larger_payload() {
 }
 
 #[test]
-fn no_subcommand_defaults_to_watch_diff_stream() {
-    let mut child = Command::new(bin())
+fn no_subcommand_defaults_to_snapshot() {
+    let output = Command::new(bin())
         .args(["--watch-path", "/tmp"])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("default command process should start");
+        .output()
+        .expect("default command invocation should succeed");
 
-    let stdout = child.stdout.take().expect("stdout should be piped");
-    let mut reader = BufReader::new(stdout);
-
-    let mut line1 = String::new();
-    reader
-        .read_line(&mut line1)
-        .expect("first default line should be readable");
-    let mut line2 = String::new();
-    reader
-        .read_line(&mut line2)
-        .expect("second default line should be readable");
-
-    let _ = child.kill();
-    let _ = child.wait();
+    assert!(output.status.success());
 
     let snapshot: Value =
-        serde_json::from_str(line1.trim()).expect("first default line should be json");
-    let patch: Value =
-        serde_json::from_str(line2.trim()).expect("second default line should be json");
+        serde_json::from_slice(&output.stdout).expect("default command should emit json");
 
-    assert_eq!(
-        snapshot.get("schema_version").and_then(|x| x.as_u64()),
-        Some(1)
-    );
-    assert!(
-        patch
-            .get("patch")
-            .and_then(|value| value.as_array())
-            .is_some()
-    );
+    assert_eq!(snapshot.get("schema_version").and_then(|x| x.as_u64()), Some(1));
+    assert!(snapshot.get("patch").is_none());
 }
 
 #[test]

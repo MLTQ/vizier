@@ -58,10 +58,7 @@ fn main() {
 
 fn run() -> Result<()> {
     let cli = Cli::parse();
-    let command = cli.command.unwrap_or(Command::Watch {
-        interval: 1000,
-        diff: true,
-    });
+    let command = cli.command.unwrap_or(Command::Snapshot);
 
     match command {
         Command::Wake => {

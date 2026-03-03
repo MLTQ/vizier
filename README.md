@@ -10,7 +10,7 @@ It emits JSON for two modes:
 
 Current implementation includes:
 - Full CLI surface from the spec (`wake`, `snapshot`, `watch`, `--interval`, `--diff`, `--pretty`)
-- Bare `vz` defaults to delta streaming (`watch --diff`)
+- Bare `vz` defaults to a one-shot snapshot
 - Default compact wake output with `--verbose` full wake override
 - Wake recent files are ranked by freshest available file activity (create/access/modify)
 - Versioned schema structs for `WakeObservation` and `Observation`
@@ -36,7 +36,7 @@ vz --all-connections snapshot
 vz --watch-path /tmp watch --diff
 ```
 
-`vz` without a subcommand behaves like `vz watch --diff`.
+`vz` without a subcommand behaves like `vz snapshot`.
 
 All JSON goes to stdout. Errors go to stderr.
 
@@ -56,19 +56,19 @@ Binary path:
 Preferred install path (no Rust required):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/master/scripts/install.sh | sh
 ```
 
 Install a specific tagged release:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/main/scripts/install.sh | VZ_VERSION=v0.1.0 sh
+curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/master/scripts/install.sh | VZ_VERSION=v0.1.0 sh
 ```
 
 Install the latest rolling branch build:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/main/scripts/install.sh | VZ_VERSION=rolling sh
+curl -fsSL https://raw.githubusercontent.com/MLTQ/vizier/master/scripts/install.sh | VZ_VERSION=rolling sh
 ```
 
 The release workflow publishes prebuilt archives for:
@@ -116,7 +116,7 @@ Current integration test coverage includes:
 - wake `--no-public-ip` behavior
 - snapshot `--all-connections` behavior
 - watch `--diff` stream contract
-- bare `vz` defaulting to delta stream
+- bare `vz` defaulting to snapshot
 - CLI help command surface (`Usage: vz ...`)
 
 ## Design Notes

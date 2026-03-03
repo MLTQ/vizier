@@ -21,9 +21,9 @@ Integration tests for CLI contract behavior and flag semantics. These tests guar
 - **Does**: Verifies `--verbose` bypasses compacting and returns a larger wake payload.
 - **Interacts with**: `--verbose` flag handling in `main.rs`.
 
-### `no_subcommand_defaults_to_watch_diff_stream`
-- **Does**: Verifies bare `vz` emits an initial snapshot followed by JSON patch output, matching default delta mode.
-- **Interacts with**: Default command fallback and watch-diff loop in `main.rs`.
+### `no_subcommand_defaults_to_snapshot`
+- **Does**: Verifies bare `vz` emits a one-shot snapshot payload instead of entering streaming mode.
+- **Interacts with**: Default command fallback in `main.rs`.
 
 ### `snapshot_all_connections_is_superset`
 - **Does**: Verifies `--all-connections` does not reduce observed network connection rows.
