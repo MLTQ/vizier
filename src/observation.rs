@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 
@@ -218,6 +218,8 @@ pub struct ConnInfo {
     pub state: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connection_count: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remote_host_count: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -297,10 +299,12 @@ fn compact_groups(groups: Vec<String>) -> Vec<String> {
 }
 
 fn compact_net_connections(connections: Vec<ConnInfo>) -> Vec<ConnInfo> {
-    let mut grouped: BTreeMap<(String, u32, String, String), (ConnInfo, u32)> = BTreeMap::new();
+    let mut grouped: BTreeMap<(String, u32, String, String), (ConnInfo, u32, BTreeSet<String>)> =
+        BTreeMap::new();
 
     for mut connection in connections {
         connection.connection_count = None;
+        connection.remote_host_count = None;
         let key = (
             connection.app.clone(),
             connection.pid,
@@ -308,18 +312,25 @@ fn compact_net_connections(connections: Vec<ConnInfo>) -> Vec<ConnInfo> {
             connection.state.clone(),
         );
 
-        if let Some((_, count)) = grouped.get_mut(&key) {
+        if let Some((_, count, remote_hosts)) = grouped.get_mut(&key) {
             *count += 1;
+            remote_hosts.insert(connection.remote_addr.clone());
         } else {
-            grouped.insert(key, (connection, 1));
+            let mut remote_hosts = BTreeSet::new();
+            remote_hosts.insert(connection.remote_addr.clone());
+            grouped.insert(key, (connection, 1, remote_hosts));
         }
     }
 
     let mut compacted: Vec<ConnInfo> = grouped
         .into_values()
-        .map(|(mut connection, count)| {
+        .map(|(mut connection, count, remote_hosts)| {
             if count > 1 {
                 connection.connection_count = Some(count);
+                connection.local_port = 0;
+                connection.remote_addr = "(multiple)".to_string();
+                connection.remote_port = 0;
+                connection.remote_host_count = Some(remote_hosts.len() as u32);
             }
             connection
         })
@@ -434,6 +445,7 @@ mod tests {
                 app: "Browser".to_string(),
                 state: "ESTABLISHED".to_string(),
                 connection_count: None,
+                remote_host_count: None,
             },
             ConnInfo {
                 proto: "tcp".to_string(),
@@ -444,6 +456,7 @@ mod tests {
                 app: "Browser".to_string(),
                 state: "ESTABLISHED".to_string(),
                 connection_count: None,
+                remote_host_count: None,
             },
             ConnInfo {
                 proto: "tcp".to_string(),
@@ -454,13 +467,19 @@ mod tests {
                 app: "Discord".to_string(),
                 state: "ESTABLISHED".to_string(),
                 connection_count: None,
+                remote_host_count: None,
             },
         ]);
 
         assert_eq!(compacted.len(), 2);
         assert_eq!(compacted[0].app, "Browser");
         assert_eq!(compacted[0].connection_count, Some(2));
+        assert_eq!(compacted[0].remote_host_count, Some(2));
+        assert_eq!(compacted[0].local_port, 0);
+        assert_eq!(compacted[0].remote_addr, "(multiple)");
+        assert_eq!(compacted[0].remote_port, 0);
         assert_eq!(compacted[1].app, "Discord");
         assert_eq!(compacted[1].connection_count, None);
+        assert_eq!(compacted[1].remote_host_count, None);
     }
 }

@@ -157,6 +157,7 @@ fn parse_established_line(line: &str, all_connections: bool) -> Option<ConnInfo>
         app,
         state: "ESTABLISHED".to_string(),
         connection_count: None,
+        remote_host_count: None,
     })
 }
 
@@ -191,6 +192,7 @@ fn parse_ss_established_line(line: &str, all_connections: bool) -> Option<ConnIn
         app,
         state: "ESTABLISHED".to_string(),
         connection_count: None,
+        remote_host_count: None,
     })
 }
 

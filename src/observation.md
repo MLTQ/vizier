@@ -25,7 +25,7 @@ Defines all serialized JSON contracts for `WakeObservation` and live `Observatio
 - **Interacts with**: Applied by default in `main.rs`; bypassed by `--verbose`.
 
 ### `Observation::compact`
-- **Does**: Collapses duplicate active network connections by app/process into a single representative row with an optional `connection_count`.
+- **Does**: Collapses duplicate active network connections by app/process into an explicit aggregate row with optional `connection_count` and `remote_host_count`.
 - **Interacts with**: Applied only for bare `vz` in `main.rs`.
 
 ## Contracts

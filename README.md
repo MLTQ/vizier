@@ -36,7 +36,7 @@ vz --all-connections snapshot
 vz --watch-path /tmp watch --diff
 ```
 
-`vz` without a subcommand behaves like a compact `vz snapshot` (not a stream). Duplicate active connections from the same app/process are grouped with `connection_count` when needed.
+`vz` without a subcommand behaves like a compact `vz snapshot` (not a stream). Duplicate active connections from the same app/process are grouped with `connection_count`, aggregate rows use `remote_addr: "(multiple)"`, and `vz --verbose` restores the full raw connection list.
 
 All JSON goes to stdout. Errors go to stderr.
 

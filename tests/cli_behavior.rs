@@ -137,6 +137,74 @@ fn no_subcommand_defaults_to_snapshot() {
         Some(1)
     );
     assert!(snapshot.get("patch").is_none());
+
+    if let Some(grouped_conn) = snapshot
+        .get("net_connections")
+        .and_then(|value| value.as_array())
+        .and_then(|connections| {
+            connections
+                .iter()
+                .find(|conn| conn.get("connection_count").is_some())
+        })
+    {
+        assert_eq!(
+            grouped_conn
+                .get("remote_addr")
+                .and_then(|value| value.as_str()),
+            Some("(multiple)")
+        );
+        assert_eq!(
+            grouped_conn
+                .get("remote_port")
+                .and_then(|value| value.as_u64()),
+            Some(0)
+        );
+        assert!(grouped_conn.get("remote_host_count").is_some());
+    }
+}
+
+#[test]
+fn no_subcommand_verbose_returns_full_snapshot() {
+    let compact = Command::new(bin())
+        .args(["--watch-path", "/tmp"])
+        .output()
+        .expect("compact default command should succeed");
+    assert!(compact.status.success());
+
+    let verbose = Command::new(bin())
+        .args(["--watch-path", "/tmp", "--verbose"])
+        .output()
+        .expect("verbose default command should succeed");
+    assert!(verbose.status.success());
+
+    let compact_json: Value =
+        serde_json::from_slice(&compact.stdout).expect("compact default command should emit json");
+    let verbose_json: Value =
+        serde_json::from_slice(&verbose.stdout).expect("verbose default command should emit json");
+
+    let compact_count = compact_json
+        .get("net_connections")
+        .and_then(|value| value.as_array())
+        .map(|x| x.len())
+        .unwrap_or(0);
+    let verbose_count = verbose_json
+        .get("net_connections")
+        .and_then(|value| value.as_array())
+        .map(|x| x.len())
+        .unwrap_or(0);
+
+    assert!(verbose_count >= compact_count);
+    assert!(
+        verbose_json
+            .get("net_connections")
+            .and_then(|value| value.as_array())
+            .map(|connections| {
+                connections
+                    .iter()
+                    .all(|conn| conn.get("connection_count").is_none())
+            })
+            .unwrap_or(true)
+    );
 }
 
 #[test]

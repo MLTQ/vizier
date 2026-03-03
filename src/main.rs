@@ -76,7 +76,7 @@ fn run() -> Result<()> {
                 all_connections: cli.all_connections,
             });
             let snapshot = observer.snapshot()?;
-            let snapshot = if default_command {
+            let snapshot = if default_command && !cli.verbose {
                 snapshot.compact()
             } else {
                 snapshot
