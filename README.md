@@ -10,7 +10,7 @@ It emits JSON for two modes:
 
 Current implementation includes:
 - Full CLI surface from the spec (`wake`, `snapshot`, `watch`, `--interval`, `--diff`, `--pretty`)
-- Bare `vz` defaults to a one-shot snapshot
+- Bare `vz` defaults to a one-shot compact snapshot
 - Default compact wake output with `--verbose` full wake override
 - Wake recent files are ranked by freshest available file activity (create/access/modify)
 - Versioned schema structs for `WakeObservation` and `Observation`
@@ -36,7 +36,7 @@ vz --all-connections snapshot
 vz --watch-path /tmp watch --diff
 ```
 
-`vz` without a subcommand behaves like `vz snapshot`.
+`vz` without a subcommand behaves like a compact `vz snapshot` (not a stream). Duplicate active connections from the same app/process are grouped with `connection_count` when needed.
 
 All JSON goes to stdout. Errors go to stderr.
 

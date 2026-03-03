@@ -22,7 +22,7 @@ Integration tests for CLI contract behavior and flag semantics. These tests guar
 - **Interacts with**: `--verbose` flag handling in `main.rs`.
 
 ### `no_subcommand_defaults_to_snapshot`
-- **Does**: Verifies bare `vz` emits a one-shot snapshot payload instead of entering streaming mode.
+- **Does**: Verifies bare `vz` emits a one-shot compact snapshot payload instead of entering streaming mode.
 - **Interacts with**: Default command fallback in `main.rs`.
 
 ### `snapshot_all_connections_is_superset`

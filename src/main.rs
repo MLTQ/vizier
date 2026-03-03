@@ -58,6 +58,7 @@ fn main() {
 
 fn run() -> Result<()> {
     let cli = Cli::parse();
+    let default_command = cli.command.is_none();
     let command = cli.command.unwrap_or(Command::Snapshot);
 
     match command {
@@ -75,6 +76,11 @@ fn run() -> Result<()> {
                 all_connections: cli.all_connections,
             });
             let snapshot = observer.snapshot()?;
+            let snapshot = if default_command {
+                snapshot.compact()
+            } else {
+                snapshot
+            };
             print_json(&snapshot, cli.pretty)?;
         }
         Command::Watch { interval, diff } => {

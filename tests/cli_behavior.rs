@@ -132,7 +132,10 @@ fn no_subcommand_defaults_to_snapshot() {
     let snapshot: Value =
         serde_json::from_slice(&output.stdout).expect("default command should emit json");
 
-    assert_eq!(snapshot.get("schema_version").and_then(|x| x.as_u64()), Some(1));
+    assert_eq!(
+        snapshot.get("schema_version").and_then(|x| x.as_u64()),
+        Some(1)
+    );
     assert!(snapshot.get("patch").is_none());
 }
 

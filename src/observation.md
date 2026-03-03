@@ -13,6 +13,7 @@ Defines all serialized JSON contracts for `WakeObservation` and live `Observatio
 ### `Observation`
 - **Does**: Represents live-state snapshots collected repeatedly.
 - **Interacts with**: Produced by `Observer::snapshot`, diffed in `diff.rs`.
+- **Rationale**: Supports `Observation::compact` so the bare `vz` command can stay readable without changing the full `vz snapshot` contract.
 
 ### Nested DTO structs
 - **Does**: Model strongly typed payload sections (machine, windows, network, filesystem, etc.).
@@ -22,6 +23,10 @@ Defines all serialized JSON contracts for `WakeObservation` and live `Observatio
 ### `WakeObservation::compact`
 - **Does**: Prunes wake payload volume (groups, home tree section omission, port list size, shell wrappers, local sessions) while preserving schema shape. Recent files are retained as an objective top-5 by freshest available file activity time.
 - **Interacts with**: Applied by default in `main.rs`; bypassed by `--verbose`.
+
+### `Observation::compact`
+- **Does**: Collapses duplicate active network connections by app/process into a single representative row with an optional `connection_count`.
+- **Interacts with**: Applied only for bare `vz` in `main.rs`.
 
 ## Contracts
 

@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -214,6 +216,8 @@ pub struct ConnInfo {
     pub pid: u32,
     pub app: String,
     pub state: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub connection_count: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -261,6 +265,13 @@ impl WakeObservation {
     }
 }
 
+impl Observation {
+    pub fn compact(mut self) -> Self {
+        self.net_connections = compact_net_connections(std::mem::take(&mut self.net_connections));
+        self
+    }
+}
+
 fn compact_groups(groups: Vec<String>) -> Vec<String> {
     let mut filtered: Vec<String> = groups
         .into_iter()
@@ -283,6 +294,47 @@ fn compact_groups(groups: Vec<String>) -> Vec<String> {
 
     filtered.truncate(2);
     filtered
+}
+
+fn compact_net_connections(connections: Vec<ConnInfo>) -> Vec<ConnInfo> {
+    let mut grouped: BTreeMap<(String, u32, String, String), (ConnInfo, u32)> = BTreeMap::new();
+
+    for mut connection in connections {
+        connection.connection_count = None;
+        let key = (
+            connection.app.clone(),
+            connection.pid,
+            connection.proto.clone(),
+            connection.state.clone(),
+        );
+
+        if let Some((_, count)) = grouped.get_mut(&key) {
+            *count += 1;
+        } else {
+            grouped.insert(key, (connection, 1));
+        }
+    }
+
+    let mut compacted: Vec<ConnInfo> = grouped
+        .into_values()
+        .map(|(mut connection, count)| {
+            if count > 1 {
+                connection.connection_count = Some(count);
+            }
+            connection
+        })
+        .collect();
+
+    compacted.sort_by(|left, right| {
+        right
+            .connection_count
+            .unwrap_or(1)
+            .cmp(&left.connection_count.unwrap_or(1))
+            .then(left.app.cmp(&right.app))
+            .then(left.pid.cmp(&right.pid))
+    });
+
+    compacted
 }
 
 fn compact_recent_files(files: Vec<RecentFileInfo>) -> Vec<RecentFileInfo> {
@@ -364,4 +416,51 @@ fn normalize_shell_history_line(line: &str) -> Option<String> {
     }
 
     if value.is_empty() { None } else { Some(value) }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ConnInfo, compact_net_connections};
+
+    #[test]
+    fn compact_net_connections_groups_duplicate_apps() {
+        let compacted = compact_net_connections(vec![
+            ConnInfo {
+                proto: "tcp".to_string(),
+                local_port: 1000,
+                remote_addr: "1.1.1.1".to_string(),
+                remote_port: 443,
+                pid: 42,
+                app: "Browser".to_string(),
+                state: "ESTABLISHED".to_string(),
+                connection_count: None,
+            },
+            ConnInfo {
+                proto: "tcp".to_string(),
+                local_port: 1001,
+                remote_addr: "1.1.1.2".to_string(),
+                remote_port: 443,
+                pid: 42,
+                app: "Browser".to_string(),
+                state: "ESTABLISHED".to_string(),
+                connection_count: None,
+            },
+            ConnInfo {
+                proto: "tcp".to_string(),
+                local_port: 2000,
+                remote_addr: "2.2.2.2".to_string(),
+                remote_port: 443,
+                pid: 7,
+                app: "Discord".to_string(),
+                state: "ESTABLISHED".to_string(),
+                connection_count: None,
+            },
+        ]);
+
+        assert_eq!(compacted.len(), 2);
+        assert_eq!(compacted[0].app, "Browser");
+        assert_eq!(compacted[0].connection_count, Some(2));
+        assert_eq!(compacted[1].app, "Discord");
+        assert_eq!(compacted[1].connection_count, None);
+    }
 }
