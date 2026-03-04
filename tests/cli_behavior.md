@@ -22,12 +22,16 @@ Integration tests for CLI contract behavior and flag semantics. These tests guar
 - **Interacts with**: `--verbose` flag handling in `main.rs`.
 
 ### `no_subcommand_defaults_to_snapshot`
-- **Does**: Verifies bare `vz` emits a one-shot compact snapshot payload instead of entering streaming mode, and that grouped connection rows are clearly marked as aggregates.
+- **Does**: Verifies bare `vz` emits a one-shot compact, pretty-printed snapshot payload instead of entering streaming mode, and that grouped connection rows are clearly marked as aggregates.
 - **Interacts with**: Default command fallback in `main.rs`.
 
 ### `no_subcommand_verbose_returns_full_snapshot`
-- **Does**: Verifies `vz --verbose` bypasses default snapshot compaction and returns the full raw connection list.
+- **Does**: Verifies `vz --verbose` bypasses default snapshot compaction while keeping the default pretty formatting.
 - **Interacts with**: `--verbose` handling in `main.rs`.
+
+### `explicit_snapshot_remains_compact_without_pretty`
+- **Does**: Verifies `vz snapshot` stays single-line JSON unless `--pretty` is requested, so script-oriented callers keep a compact one-shot path.
+- **Interacts with**: Snapshot formatting selection in `main.rs`.
 
 ### `snapshot_all_connections_is_superset`
 - **Does**: Verifies `--all-connections` does not reduce observed network connection rows.

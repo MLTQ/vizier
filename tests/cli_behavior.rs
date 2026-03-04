@@ -128,6 +128,8 @@ fn no_subcommand_defaults_to_snapshot() {
         .expect("default command invocation should succeed");
 
     assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout.clone()).expect("stdout should be utf8");
+    assert!(stdout.contains("\n  \"schema_version\""));
 
     let snapshot: Value =
         serde_json::from_slice(&output.stdout).expect("default command should emit json");
@@ -176,6 +178,8 @@ fn no_subcommand_verbose_returns_full_snapshot() {
         .output()
         .expect("verbose default command should succeed");
     assert!(verbose.status.success());
+    let verbose_stdout = String::from_utf8(verbose.stdout.clone()).expect("stdout should be utf8");
+    assert!(verbose_stdout.contains("\n  \"schema_version\""));
 
     let compact_json: Value =
         serde_json::from_slice(&compact.stdout).expect("compact default command should emit json");
@@ -205,6 +209,19 @@ fn no_subcommand_verbose_returns_full_snapshot() {
             })
             .unwrap_or(true)
     );
+}
+
+#[test]
+fn explicit_snapshot_remains_compact_without_pretty() {
+    let output = Command::new(bin())
+        .args(["--watch-path", "/tmp", "snapshot"])
+        .output()
+        .expect("explicit snapshot should succeed");
+
+    assert!(output.status.success());
+
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
+    assert!(!stdout.contains("\n  \"schema_version\""));
 }
 
 #[test]

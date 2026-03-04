@@ -81,7 +81,7 @@ fn run() -> Result<()> {
             } else {
                 snapshot
             };
-            print_json(&snapshot, cli.pretty)?;
+            print_json(&snapshot, cli.pretty || default_command)?;
         }
         Command::Watch { interval, diff } => {
             let mut observer = create_observer(ObserverConfig {

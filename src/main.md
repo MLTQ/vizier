@@ -8,7 +8,7 @@ CLI entry point for `vz`. Parses arguments, dispatches commands, and serializes 
 ### `Cli`
 - **Does**: Defines global flags and subcommands exposed by the binary.
 - **Interacts with**: `create_observer` and `create_waker` in `observer/mod.rs`.
-- **Rationale**: Bare `vz` defaults to a one-shot compact `snapshot` for quick terminal use; `--verbose` restores the full raw snapshot; `wake` remains explicit and uses compact output unless `--verbose` is set.
+- **Rationale**: Bare `vz` defaults to a one-shot compact, pretty-printed `snapshot` for quick terminal use; `--verbose` restores the full raw snapshot while keeping the readable formatting; `wake` remains explicit and uses compact output unless `--verbose` is set.
 
 ### `run`
 - **Does**: Executes one-shot (`wake`, `snapshot`) and streaming (`watch`) flows.
@@ -22,7 +22,7 @@ CLI entry point for `vz`. Parses arguments, dispatches commands, and serializes 
 
 | Dependent | Expects | Breaking changes |
 |-----------|---------|------------------|
-| CLI users | Bare `vz` emits a one-shot compact snapshot by default, while `vz --verbose` restores full detail; `vz wake`, `vz snapshot`, `vz watch` remain available | Default command behavior, command names/flags, output format |
+| CLI users | Bare `vz` emits a one-shot compact, pretty-printed snapshot by default, while `vz --verbose` restores full detail; `vz wake`, `vz snapshot`, `vz watch` remain available | Default command behavior, command names/flags, output format |
 | Scripts | stdout emits JSON lines and stderr emits errors | Mixing logs into stdout |
 
 ## Notes
